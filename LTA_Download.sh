@@ -10,7 +10,9 @@ fi
 
 while read -r obsID projectID; do
   if [ ! -e *${obsID::4}*.ar ]; then
-    lta-retrieve.py -p $projectID --query $obsID
+    if [ ! -e bad_obs/*${obsID::4}*.ar ]; then
+      lta-retrieve.py -p $projectID --query $obsID
+    fi
   fi
 done < obsID_list.txt
 

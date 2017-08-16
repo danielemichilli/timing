@@ -47,23 +47,34 @@ def table_line(folder='.'):
   #derq = [r.split() for r in derq]
 
   #Read parameters
+  P0 = float(derq[1].split()[2])
+  P1 = float(derq[2].split()[2])
   E1 = float(derq[5].split()[2])
   B = float(derq[6].split()[4])
   T = float(derq[7].split()[3])
 
-  return "{PSR} &\t{RA} &\t{DEC} &\t{F:.3f} $\\pm$ {F_err:.1e} &\t{F1:.3f} $\\pm$ {F1_err:.4f} &\t{EPOCH} &\t{NTOA} &\t{START} - {FINISH} &\t{RES:.0f} &\t{DM:.1f} &\t{E1:.1e} &\t{B:.1e} &\t{T:.1e} \\\\".format(PSR=PSRJ, RA=RAJ, DEC=DECJ, F=F0, F_err=F0_err, F1=F1*1e15, F1_err=F1_err*1e15, EPOCH=EPOCH, NTOA=NTOA, START=START, FINISH=FINISH, RES=RES, DM=DM, E1=E1, B=B, T=T)
+  
+
+  return {'PSRJ': PSRJ, 'RAJ': RAJ, 'DECJ': DECJ, 'F0': F0, 'F0_err': F0_err, 'F1': F1, 'F1_err': F1_err, 'EPOCH': EPOCH, 'DM': DM, 'START': START, 'FINISH': FINISH, 'NTOA': NTOA, 'RES': RES, 'E1': E1, 'B': B, 'T': T, 'P0': P0, 'P1': P1}
+
+
 
 
 if __name__ == '__main__':
   psr_list = glob(os.path.join(wrk_dir,"J???????*"))
   tex_table = []
   for psr in psr_list:
+    print "Analysing psr {}".format(os.path.basename(psr))
     if os.path.isfile("{}/{}.par".format(psr, os.path.basename(psr))):
-      tex_table.append(table_line(folder=psr))
+      params = table_line(folder=psr)
+      line = "{PSR} &\t{RA} &\t{DEC} &\t{F:.3f} $\\pm$ {F_err:.1e} &\t{F1:.3f} $\\pm$ {F1_err:.4f} &\t{EPOCH} &\t{NTOA} &\t{START} - {FINISH} &\t{RES:.0f} &\t{DM:.1f} &\t{E1:.1e} &\t{B:.1e} &\t{T:.1e} \\\\".format(PSR=params['PSRJ'], RA=params['RAJ'], DEC=params['DECJ'], F=params['F0'], F_err=params['F0_err'], F1=params['F1']*1e15, F1_err=params['F1_err']*1e15, EPOCH=params['EPOCH'], NTOA=params['NTOA'], START=params['START'], FINISH=params['FINISH'], RES=params['RES'], DM=params['DM'], E1=params['E1'], B=params['B'], T=params['T'])
+      tex_table.append(line)
   with open(os.path.join(wrk_dir, 'psr_params.tex'), 'w') as tex:
-    tex.write("%PSRJ & RA & DEC & F0 (Hz) & F1 ($10^{-15}$s$^{-2}$) & Epoch & Ntoa & Timespan & Residuals ($\mu$s) & DM (pc/cc) & E1 (ergs/s) & B (gauss) & Age (yr)\\\\\n")
-    for line in tex_table:
+    tex.write("\\begin{table}\n\\centering\n\\caption{}\n\\label{tab:ephemeris}\n\\begin{tabular}{lllllllllllll}\n\\toprule\n")
+    tex.write("PSRJ & RA & DEC & F0 (Hz) & F1 ($10^{-15}$s$^{-2}$) & Epoch & Ntoa & Timespan & Residuals ($\mu$s) & DM (pc/cc) & E1 (ergs/s) & B (gauss) & Age (yr)\\\\\n")
+    tex.write("\\midrule\n")
+    for line in sorted(tex_table):
       tex.write(line+"\n")
-
+    tex.write("\\bottomrule\n\\end{tabular}\n\\end{table}\n")
 
 
